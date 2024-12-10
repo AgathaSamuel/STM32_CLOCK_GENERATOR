@@ -1,3 +1,3 @@
-../Core/Src/menu.c:10:6:menu_init	4	static
-../Core/Src/menu.c:17:6:menu_update	4	static
-../Core/Src/menu.c:46:6:menu_display	8	static
+../Core/Src/menu.c:16:6:menu_init	4	static
+../Core/Src/menu.c:23:6:menu_update	16	static
+../Core/Src/menu.c:64:6:menu_display	8	static

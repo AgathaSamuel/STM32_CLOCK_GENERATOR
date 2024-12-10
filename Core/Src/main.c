@@ -18,15 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 #include "i2c_lcd.h"
 #include "encoder.h"
 #include "menu.h"
 
-
-
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
@@ -50,12 +48,10 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
-I2C_LCD_HandleTypeDef lcd1;
-
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-
+I2C_LCD_HandleTypeDef lcd1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,20 +66,37 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t counter = 0 ;
+#define DEBOUNCE_DELAY 300
 
+uint32_t last_interrupt_time = 0;
+
+uint8_t debounce_check() {
+    uint32_t current_time = HAL_GetTick();  // Dapatkan waktu sekarang
+    if ((current_time - last_interrupt_time) > DEBOUNCE_DELAY) {
+        last_interrupt_time = current_time;  // Update waktu terakhir
+        return 1;  // Tombol stabil
+    }
+    return 0;  // Abaikan jika tombol masih bouncing
+}
+
+void toggle_led(GPIO_PinState state) {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, state);
+}
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == GPIO_PIN_13) {  // Push Button pada pin 13
-        if (menu_position == 1) {  // Jika di menu "Set"
-            setting_mode = !setting_mode;  // Toggle mode
-        } else if (menu_position == 0) {  // Jika di menu "Start"
-            start_status = !start_status;  // Toggle Start/Stop
-            if (start_status == 1) {
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // Contoh: Menyalakan LED
-            } else {
-                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // Contoh: Mematikan LED
-            }
+    if (GPIO_Pin == GPIO_PIN_0 && debounce_check()) {  // Filter tombol dengan debounce
+        switch (menu_position) {
+            case 1:  // Menu "Set"
+                setting_mode = !setting_mode;  // Toggle mode
+                break;
+
+            case 0:  // Menu "Start"
+                start_status = !start_status;  // Toggle Start/Stop
+                toggle_led(start_status ? GPIO_PIN_RESET : GPIO_PIN_SET);  // LED On/Off
+                break;
+
+            default:
+                break;
         }
     }
 }
@@ -146,10 +159,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
       menu_update();   // Update logika menu
       menu_display();  // Tampilkan menu
-      HAL_Delay(200);  // Refresh LCD
+      HAL_Delay(50);  // Refresh LCD
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -366,12 +380,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : ENC_SW_Pin */
   GPIO_InitStruct.Pin = ENC_SW_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(ENC_SW_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
