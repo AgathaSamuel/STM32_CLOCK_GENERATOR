@@ -100,16 +100,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 default:
                     break;
             }
-        } else if (current_screen == 1) {  // Screen 2
+        }
+        else if (current_screen == 1) {  // Screen 2
             if (is_selecting_scaler) {  // Jika sedang memilih scaler
                 current_scaler_index = selected_scaler_index;  // Simpan indeks scaler terakhir
                 is_selecting_scaler = 0;  // Keluar dari mode memilih scaler
-            } else {
+            }else if(is_selecting_frequency){
+            	last_set_value = set_value;
+            	is_selecting_frequency = 0;
+            }
+            else {
                 switch (secondary_menu_pos) {
                     case 0:  // Menu "SCALE"
                         is_selecting_scaler = 1;  // Masuk ke mode memilih scaler
                         break;
-
+                    case 1 :
+                    	is_selecting_frequency = 1;
+                    	break;
                     case 2:  // Menu "OK"
                         current_screen = 0;  // Kembali ke Screen 1
                         break;
@@ -183,7 +190,7 @@ int main(void)
   {
       menu_update();   // Update logika menu
       menu_display();  // Tampilkan menu
-      HAL_Delay(50);  // Refresh LCD
+      HAL_Delay(1);  // Refresh LCD
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
