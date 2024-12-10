@@ -85,10 +85,11 @@ void toggle_led(GPIO_PinState state) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == GPIO_PIN_0 && debounce_check()) {  // Filter tombol dengan debounce
-        if (current_screen == 0) {  // Screen awal
+        if (current_screen == 0) {  // Screen 1
             switch (menu_position) {
                 case 1:  // Menu "Set"
-                    current_screen = 1;  // Pindah ke screen kedua
+                    current_screen = 1;  // Pindah ke Screen 2
+                    secondary_menu_pos = 0;  // Reset ke posisi menu awal pada Screen 2
                     break;
 
                 case 0:  // Menu "Start"
@@ -99,13 +100,28 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 default:
                     break;
             }
-        } else if (current_screen == 1) {  // Screen kedua
-            if (secondary_menu_pos == 2) {  // Posisi "OK"
-                current_screen = 0;  // Kembali ke screen awal
+        } else if (current_screen == 1) {  // Screen 2
+            if (is_selecting_scaler) {  // Jika sedang memilih scaler
+                current_scaler_index = selected_scaler_index;  // Simpan indeks scaler terakhir
+                is_selecting_scaler = 0;  // Keluar dari mode memilih scaler
+            } else {
+                switch (secondary_menu_pos) {
+                    case 0:  // Menu "SCALE"
+                        is_selecting_scaler = 1;  // Masuk ke mode memilih scaler
+                        break;
+
+                    case 2:  // Menu "OK"
+                        current_screen = 0;  // Kembali ke Screen 1
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     }
 }
+
 
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
