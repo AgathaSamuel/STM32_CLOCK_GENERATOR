@@ -85,18 +85,24 @@ void toggle_led(GPIO_PinState state) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == GPIO_PIN_0 && debounce_check()) {  // Filter tombol dengan debounce
-        switch (menu_position) {
-            case 1:  // Menu "Set"
-                setting_mode = !setting_mode;  // Toggle mode
-                break;
+        if (current_screen == 0) {  // Screen awal
+            switch (menu_position) {
+                case 1:  // Menu "Set"
+                    current_screen = 1;  // Pindah ke screen kedua
+                    break;
 
-            case 0:  // Menu "Start"
-                start_status = !start_status;  // Toggle Start/Stop
-                toggle_led(start_status ? GPIO_PIN_RESET : GPIO_PIN_SET);  // LED On/Off
-                break;
+                case 0:  // Menu "Start"
+                    start_status = !start_status;  // Toggle Start/Stop
+                    toggle_led(start_status ? GPIO_PIN_RESET : GPIO_PIN_SET);  // LED On/Off
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+            }
+        } else if (current_screen == 1) {  // Screen kedua
+            if (secondary_menu_pos == 2) {  // Posisi "OK"
+                current_screen = 0;  // Kembali ke screen awal
+            }
         }
     }
 }
