@@ -69,6 +69,7 @@ static void MX_TIM3_Init(void);
 #define DEBOUNCE_DELAY 300
 
 uint32_t last_interrupt_time = 0;
+volatile uint32_t last_time = 0;
 
 uint8_t debounce_check() {
     uint32_t current_time = HAL_GetTick();  // Dapatkan waktu sekarang
@@ -77,10 +78,6 @@ uint8_t debounce_check() {
         return 1;  // Tombol stabil
     }
     return 0;  // Abaikan jika tombol masih bouncing
-}
-
-void toggle_led(GPIO_PinState state) {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, state);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -94,7 +91,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
                 case 0:  // Menu "Start"
                     start_status = !start_status;  // Toggle Start/Stop
-                    toggle_led(start_status ? GPIO_PIN_RESET : GPIO_PIN_SET);  // LED On/Off
                     break;
 
                 default:
@@ -191,6 +187,19 @@ int main(void)
       menu_update();   // Update logika menu
       menu_display();  // Tampilkan menu
       HAL_Delay(1);  // Refresh LCD
+      if (start_status == 1)
+
+      {
+    	  if(HAL_GetTick()-last_time >= 500)
+    	  {
+    		  HAL_GPIO_TogglePin(GPIOC, LED_PIN_Pin);
+    		  last_time = HAL_GetTick();
+    	  }
+      }
+      else
+      {
+    	  HAL_GPIO_WritePin(GPIOC, LED_PIN_Pin, SET);
+      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -397,7 +406,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_PIN_GPIO_Port, LED_PIN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_PIN_GPIO_Port, LED_PIN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : LED_PIN_Pin */
   GPIO_InitStruct.Pin = LED_PIN_Pin;

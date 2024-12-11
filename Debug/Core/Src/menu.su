@@ -1,4 +1,4 @@
-../Core/Src/menu.c:30:6:menu_init	4	static
-../Core/Src/menu.c:37:6:menu_update	16	static
-../Core/Src/menu.c:109:6:menu_display	72	static
-../Core/Src/menu.c:244:6:format_number	56	static
+../Core/Src/menu.c:32:6:menu_init	4	static
+../Core/Src/menu.c:39:6:menu_update	16	static
+../Core/Src/menu.c:121:6:menu_display	152	static
+../Core/Src/menu.c:328:6:format_number	56	static

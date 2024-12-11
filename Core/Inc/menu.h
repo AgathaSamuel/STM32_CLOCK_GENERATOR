@@ -7,6 +7,8 @@
 #define MAX_MENU 1      // Menu paling kanan
 #define MIN_MENU 0      // Menu paling kiri
 
+#define MAX_SET_VALUE 160000000
+#define MIN_SET_VALUE 4000
 
 // Variabel Global
 extern volatile int menu_position;
