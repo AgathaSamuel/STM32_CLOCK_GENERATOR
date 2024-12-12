@@ -3,7 +3,7 @@
 // Variabel Global
 volatile int menu_position = 0;     // 0: Start, 1: Set
 volatile int setting_mode = 0;      // 0: Navigasi, 1: Set nilai
-volatile uint32_t set_value = 4000;
+volatile uint32_t set_value = 8000;
 volatile int start_status = 0;      // 0: Stop, 1: Start// Nilai yang diatur
 volatile int current_screen = 0;   // 0: Screen awal, 1: Screen kedua
 volatile int secondary_menu_pos = 0; // 0: SCALE, 1: F, 2: OK
@@ -12,13 +12,13 @@ volatile int selected_scaler_index = 0;       // Indeks scaler yang dipilih
 volatile int current_scaler_index = 0;
 const int scaler_values[] = {1, 10, 100, 1000, 10000, 100000};  // Daftar scaler
 volatile int is_selecting_frequency = 0;
-volatile uint32_t last_set_value = 4000;
+volatile uint32_t last_set_value = 8000;
 
 static int last_menu_position = -1;
 static int last_start_status = -1;
 static int last_secondary_menu_pos = -1;
 static int last_screen = -1; // Menyimpan screen terakhir yang ditampilkan
-static uint32_t last_set_value_display = 4000;  // Menyimpan nilai terakhir yang ditampilkan di LCD
+static uint32_t last_set_value_display = 8000;  // Menyimpan nilai terakhir yang ditampilkan di LCD
 static int is_first_update = 1;
 
 
@@ -32,7 +32,7 @@ int blink_state = 1;           // 1: Tampilkan "SCALE", 0: Hapus "SCALE"
 void menu_init(void) {
     menu_position = 0;
     setting_mode = 0;
-    set_value = 4000;
+    set_value = 8000;
     start_status = 0;
 }
 
@@ -125,6 +125,7 @@ void menu_display(void) {
         if (current_screen == 0) {
             last_start_status = -1;  // Paksa pembaruan ulang tulisan "START"/"STOP"
             last_menu_position = -1;  // Paksa pembaruan ulang posisi menu
+            is_first_update = 1;
         }
     }
 
@@ -177,7 +178,7 @@ void menu_display(void) {
             last_menu_position = menu_position;  // Simpan posisi terakhir
         }
     } else if (current_screen == 1) {  // Screen kedua
-    	is_first_update = 1;
+
 
     	if(!is_selecting_scaler || blink_state)
     	{
@@ -241,7 +242,7 @@ void menu_display(void) {
                 {
                     // Membersihkan area angka lama di display
                     lcd_gotoxy(&lcd1, 3, 1);
-                    lcd_puts(&lcd1, "                  ");  // Tampilkan spasi kosong untuk membersihkan angka lama
+                    lcd_puts(&lcd1, "                        ");  // Tampilkan spasi kosong untuk membersihkan angka lama
 
                     // Tampilkan angka baru
                     char set_value_buffer[20];
@@ -277,7 +278,7 @@ void menu_display(void) {
                 {
                     // Membersihkan area angka lama di display
                     lcd_gotoxy(&lcd1, 3, 1);
-                    lcd_puts(&lcd1, "                  ");  // Tampilkan spasi kosong untuk membersihkan angka lama
+                    lcd_puts(&lcd1, "                        ");  // Tampilkan spasi kosong untuk membersihkan angka lama
 
                     // Tampilkan angka baru
                     char set_value_buffer[20];

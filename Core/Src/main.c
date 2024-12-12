@@ -24,6 +24,7 @@
 #include "i2c_lcd.h"
 #include "encoder.h"
 #include "menu.h"
+#include "si5351.h"
 
 
 /* USER CODE END Includes */
@@ -52,6 +53,7 @@ TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 I2C_LCD_HandleTypeDef lcd1;
+uint32_t previous_set_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -175,6 +177,18 @@ int main(void)
 
   encoder_init(&htim3);
   menu_init();
+  const int32_t correction = 978;
+  si5351_Init(correction);
+
+  si5351PLLConfig_t pll_conf;
+  si5351OutputConfig_t out_conf;
+  int32_t Fclk = 100000; // 7 MHz
+
+  si5351_Calc(Fclk, &pll_conf, &out_conf);
+  si5351_SetupPLL(SI5351_PLL_A, &pll_conf);
+
+  si5351_SetupOutput(0, SI5351_PLL_A, SI5351_DRIVE_STRENGTH_4MA, &out_conf, 0);
+  si5351_EnableOutputs(1<<0);
 
 
 
@@ -184,12 +198,26 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
       menu_update();   // Update logika menu
       menu_display();  // Tampilkan menu
-      HAL_Delay(1);  // Refresh LCD
+
+
       if (start_status == 1)
 
       {
+    	  if (last_set_value != previous_set_value)
+    	     {
+    	         // Jika berubah, lakukan setup untuk CLK0 dan CLK2
+    	         si5351_SetupCLK0(last_set_value, SI5351_DRIVE_STRENGTH_4MA);
+    	         si5351_SetupCLK2(last_set_value, SI5351_DRIVE_STRENGTH_4MA);
+
+
+    	         // Update nilai terakhir
+    	         previous_set_value = last_set_value;
+    	     }
+    	  si5351_EnableOutputs((1<<0) | (1<<2));
     	  if(HAL_GetTick()-last_time >= 500)
     	  {
     		  HAL_GPIO_TogglePin(GPIOC, LED_PIN_Pin);
@@ -198,11 +226,14 @@ int main(void)
       }
       else
       {
+    	  si5351_EnableOutputs(0);
     	  HAL_GPIO_WritePin(GPIOC, LED_PIN_Pin, SET);
       }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+      HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }

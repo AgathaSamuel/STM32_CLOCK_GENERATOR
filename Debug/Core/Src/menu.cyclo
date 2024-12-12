@@ -1,4 +1,4 @@
 ../Core/Src/menu.c:32:6:menu_init	1
 ../Core/Src/menu.c:39:6:menu_update	21
 ../Core/Src/menu.c:121:6:menu_display	30
-../Core/Src/menu.c:328:6:format_number	4
+../Core/Src/menu.c:329:6:format_number	4
