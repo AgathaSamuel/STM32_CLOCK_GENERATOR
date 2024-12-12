@@ -29,6 +29,7 @@ uint32_t last_blink_time = 0;  // Waktu terakhir blink
 int blink_state = 1;           // 1: Tampilkan "SCALE", 0: Hapus "SCALE"
 
 
+
 void menu_init(void) {
     menu_position = 0;
     setting_mode = 0;
@@ -142,6 +143,19 @@ void menu_display(void) {
 
         lcd_gotoxy(&lcd1, 0, 1);
         lcd_puts(&lcd1, "V:");
+        lcd_gotoxy(&lcd1, 2, 1);
+        char voltage_buffer[20];
+        int integer_part = (int)sensed_voltage;               // Bagian integer
+        int decimal_part = (int)((sensed_voltage - integer_part) * 10);  // Bagian desimal (1 digit)
+
+        if (integer_part < 10) {
+            // Jika nilai integer kurang dari 10, tampilkan dengan angka nol di depan
+            sprintf(voltage_buffer, "0%d.%d", integer_part, decimal_part);
+        } else {
+            // Jika nilai integer sudah dua digit, tampilkan langsung
+            sprintf(voltage_buffer, "%d.%d", integer_part, decimal_part);
+        }
+        lcd_puts(&lcd1, voltage_buffer);
 
         lcd_gotoxy(&lcd1, 13, 1);
         lcd_puts(&lcd1, "SET");

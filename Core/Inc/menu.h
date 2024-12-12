@@ -24,6 +24,7 @@ extern volatile int current_scaler_index;
 extern volatile int is_selecting_frequency;
 extern volatile uint32_t last_set_value;
 extern I2C_LCD_HandleTypeDef lcd1;
+extern float sensed_voltage;
 
 // Fungsi
 void menu_init(void);

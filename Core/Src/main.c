@@ -54,6 +54,10 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 I2C_LCD_HandleTypeDef lcd1;
 uint32_t previous_set_value;
+uint32_t adcValue = 0; // Variabel untuk menyimpan hasil ADC
+float voltage = 0.0f;   // Variabel untuk menyimpan hasil tegangan
+float sensed_voltage ;
+uint32_t adc_time;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -134,6 +138,28 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	encoder_value = __HAL_TIM_GET_COUNTER(htim);
 }
 
+float ADC_ReadVoltage(void)
+{
+    // Mulai konversi ADC
+    HAL_ADC_Start(&hadc1);
+
+    // Tunggu sampai konversi selesai
+    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+    {
+        // Ambil hasil konversi ADC
+        adcValue = HAL_ADC_GetValue(&hadc1);
+
+        // Hitung tegangan berdasarkan nilai ADC (contoh: VREF = 3.3V, 12-bit ADC)
+        voltage = (adcValue*11.79)/1880;
+    }
+
+    // Matikan ADC setelah selesai
+    HAL_ADC_Stop(&hadc1);
+
+    return voltage;
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -171,24 +197,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
+
   lcd1.hi2c = &hi2c1;
   lcd1.address = 0x4E;
   lcd_init(&lcd1);
 
   encoder_init(&htim3);
   menu_init();
+
+
+
   const int32_t correction = 978;
   si5351_Init(correction);
-
-  si5351PLLConfig_t pll_conf;
-  si5351OutputConfig_t out_conf;
-  int32_t Fclk = 100000; // 7 MHz
-
-  si5351_Calc(Fclk, &pll_conf, &out_conf);
-  si5351_SetupPLL(SI5351_PLL_A, &pll_conf);
-
-  si5351_SetupOutput(0, SI5351_PLL_A, SI5351_DRIVE_STRENGTH_4MA, &out_conf, 0);
-  si5351_EnableOutputs(1<<0);
 
 
 
@@ -202,7 +222,11 @@ int main(void)
 
       menu_update();   // Update logika menu
       menu_display();  // Tampilkan menu
-
+	  if(HAL_GetTick()-adc_time >= 500)
+	  {
+		  sensed_voltage = ADC_ReadVoltage();
+		  adc_time = HAL_GetTick();
+	  }
 
       if (start_status == 1)
 
@@ -221,6 +245,7 @@ int main(void)
     	  if(HAL_GetTick()-last_time >= 500)
     	  {
     		  HAL_GPIO_TogglePin(GPIOC, LED_PIN_Pin);
+    		  sensed_voltage = ADC_ReadVoltage();
     		  last_time = HAL_GetTick();
     	  }
       }
